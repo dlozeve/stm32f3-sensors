@@ -34,9 +34,16 @@ ninja -C build -t compdb > compile_commands.json
 
 ** Flash and monitor
 
+Using =ninja=:
 #+begin_src sh
 ninja -C build
 ninja -C build flash
+#+end_src
+
+Using =west=:
+#+begin_src sh
+west build
+west flash
 #+end_src
 
 Get the device location with =dmesg= (here =/Dev/ttyACM0=), the open
