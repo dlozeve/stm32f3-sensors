@@ -1,7 +1,6 @@
 #include <device.h>
 #include <devicetree.h>
 #include <drivers/gpio.h>
-#include <drivers/i2c.h>
 #include <sys/printk.h>
 #include <zephyr.h>
 
@@ -23,19 +22,20 @@
 #define LED_FLAGS 0
 #endif
 
+// Define the accelerometer as a child of the I2C1 interface
 /* #define I2C_NODE DT_NODELABEL(i2c1) */
-/* //#define I2C_NODE DT_PATH(soc, i2c1, lsm303dlhc-magn_1e) */
-
-/* #if DT_NODE_HAS_STATUS(I2C_NODE, okay) */
-/* #define I2C DT_LABEL(I2C_NODE) */
-/* #else */
-/* #error "i2c1 devicetree label is not defined" */
-/* #define I2C "" */
-/* #endif */
+/* #define ACC_NODE DT_CHILD(I2C_NODE, lsm303dlhc_accel_19) */
+// Define the accelerometer directly
+#define ACC_NODE DT_INST(0, st_lis2dh)
+#if DT_NODE_HAS_STATUS(ACC_NODE, okay)
+#define ACC DT_LABEL(ACC_NODE)
+#else
+#error "Accelerometer device is not defined"
+#endif
 
 void main(void) {
   const struct device *led_dev;
-  /* const struct device *i2c_dev; */
+  const struct device *acc_dev;
   int ret;
   bool led_active = true;
 
@@ -43,7 +43,7 @@ void main(void) {
 
   led_dev = device_get_binding(LED);
   if (led_dev == NULL) {
-    printk("Didn't find LED device %s\n", LED);
+    printk("Failed to initialize LED device %s\n", LED);
     return;
   }
 
@@ -55,12 +55,12 @@ void main(void) {
   }
   printk("Set up LED at %s on pin %d\n", LED, LED_PIN);
 
-  /* i2c_dev = device_get_binding(I2C); */
-  /* if (i2c_dev == NULL) { */
-  /*   printk("Didn't find device %s\n", I2C); */
-  /*   return; */
-  /* } */
-  printk("Success!\n");
+  acc_dev = device_get_binding(ACC);
+  if (acc_dev == NULL) {
+    printk("Failed to initialize accelerometer device %s\n", ACC);
+    return;
+  }
+  printk("Set up accelerometer %s\n", ACC);
 
   while (1) {
     gpio_pin_set(led_dev, LED_PIN, (int)led_active);
