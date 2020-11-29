@@ -1,6 +1,7 @@
 #include <device.h>
 #include <devicetree.h>
 #include <drivers/gpio.h>
+#include <drivers/sensor.h>
 #include <sys/printk.h>
 #include <zephyr.h>
 
@@ -34,13 +35,12 @@
 #endif
 
 void main(void) {
-  const struct device *led_dev;
-  const struct device *acc_dev;
   int ret;
   bool led_active = true;
 
   printk("Board config: %s\n", CONFIG_BOARD);
 
+  const struct device *led_dev;
   led_dev = device_get_binding(LED);
   if (led_dev == NULL) {
     printk("Failed to initialize LED device %s\n", LED);
@@ -55,6 +55,7 @@ void main(void) {
   }
   printk("Set up LED at %s on pin %d\n", LED, LED_PIN);
 
+  const struct device *acc_dev;
   acc_dev = device_get_binding(ACC);
   if (acc_dev == NULL) {
     printk("Failed to initialize accelerometer device %s\n", ACC);
@@ -63,6 +64,13 @@ void main(void) {
   printk("Set up accelerometer %s\n", ACC);
 
   while (1) {
+    struct sensor_value accel[3];
+    sensor_sample_fetch(acc_dev);
+    sensor_channel_get(acc_dev, SENSOR_CHAN_ACCEL_XYZ, accel);
+    printk("Acceleration: (%f, %f, %f)\n", sensor_value_to_double(&accel[0]),
+           sensor_value_to_double(&accel[1]),
+           sensor_value_to_double(&accel[2]));
+
     gpio_pin_set(led_dev, LED_PIN, (int)led_active);
     led_active = !led_active;
     k_msleep(SLEEP_TIME_MS);
