@@ -1,0 +1,46 @@
+* Sensors
+
+Experiments with the sensors of the [[https://www.st.com/en/evaluation-tools/stm32f3discovery.html][STM32F3DISCOVERY]] board.
+
+** Setup Zephyr
+
+Install the Zephyr toolchain, following the [[https://docs.zephyrproject.org/latest/getting_started/index.html][Getting Started]] guide.
+
+You can install =west= in a virtual environment. Then you will need to
+activate this environment and configure the Zephyr base directory:
+#+begin_src sh
+pyenv activate zephyr_env  # or whatever you are using to change virtualenvs
+source ~/zephyrproject/zephyr/zephyr-env.sh  # change this if you installed Zephyr somewhere else
+#+end_src
+
+This will define the =ZEPHYR_BASE= environment variable to the Zephyr
+base directory. Then you have access to =west='s extensions like
+=build=, =flash=, etc.
+
+You will need to do this everytime you want to use =west=.
+
+** Setup the project
+
+In the project directory, run:
+#+begin_src sh
+cmake -B build -GNinja -DBOARD=stm32f3_disco
+ninja -C build
+#+end_src
+
+You can also generate the compilation database with:
+#+begin_src sh
+ninja -C build -t compdb > compile_commands.json
+#+end_src
+
+** Flash and monitor
+
+#+begin_src sh
+ninja -C build
+ninja -C build flash
+#+end_src
+
+Get the device location with =dmesg= (here =/Dev/ttyACM0=), the open
+serial communications with minicom:
+#+begin_src sh
+minicom --device /dev/ttyACM0
+#+end_src
